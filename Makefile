@@ -1,4 +1,6 @@
-TRACEUR_RUNTIME=$(shell dirname `which traceur`)/bin/traceur.js
+TRACEUR=$(shell which traceur)
+TRACEUR_REAL=$(shell perl -e 'use Cwd "abs_path";print abs_path(shift)' $(TRACEUR))
+TRACEUR_RUNTIME=$(shell dirname $(TRACEUR_REAL))/bin/traceur.js
 BUILD=build
 
 $(BUILD)/demo.js: underscore.js $(TRACEUR_RUNTIME) $(BUILD)/traceur.init.out.js $(BUILD)/solver.out.js $(BUILD)/dict.out.js
