@@ -6,6 +6,8 @@ Several different ports of [Norvig's Sudoku solver](http://norvig.com/sudoku.htm
 * a possible ES7 proposal to generalize and supersede those comprehensions;
 * combinator methods with arrow-function shorthand
 
+This is a cleaned up version of [this JavaScript port](http://mxr.mozilla.org/mozilla-central/source/js/src/tests/ecma_6/Comprehensions/sudoku.js?raw=1).
+
 # Building
 
 With [traceur](https://github.com/google/traceur-compiler) in your PATH, type
