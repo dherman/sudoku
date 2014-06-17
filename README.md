@@ -46,7 +46,7 @@ type block = [ix x 9]
 
 type unit = [row, col, block]
 
-type values = `$...{[digit x k]}`
+type values = [digit x k]
   where 0 <= k <= 9
 ```
 

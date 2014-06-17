@@ -3,25 +3,25 @@
 
 // (A,B):Plus => (Iterable<A>, Iterable<A>) -> Array<B>
 function cross(A, B) {
-    return [for (a of A)
-              for (b of B)
-                a + b];
+  return [for (a of A)
+            for (b of B)
+              a + b];
 }
 
-var rows     /* : [rx x 9]       */ = "ABCDEFGHI";
-var cols     /* : [cx x 9]       */ = "123456789";
-var digits   /* : [digit x 9]    */ = "123456789";
+var rows     /* : [rx x 9]       */ = "ABCDEFGHI".split("");
+var cols     /* : [cx x 9]       */ = "123456789".split("");
+var digits   /* : [digit x 9]    */ = "123456789".split("");
 
 var cells    /* : Array<ix x 91> */ = cross(rows, cols);
 
 var unitlist /* : Array<Array<ix x 9> x 27> */
   = [for (c of cols)
-       cross(rows, c)]
+       cross(rows, [c])]
     .concat([for (r of rows)
-               cross(r, cols)])
+               cross([r], cols)])
     .concat([for (rs of ["ABC","DEF","GHI"])
                for (cs of ["123","456","789"])
-                 cross(rs, cs)]);
+                 cross(rs.split(""), cs.split(""))]);
 
 var units    /* : Dict<ix, unit> */
   = Dict.build((for (s of cells)
@@ -49,7 +49,7 @@ class Solver {
     var solver = new Solver();
 
     for (var [s, d] of cells.zip(grid.trim())) {
-      if (digits.contains(d) && !solver.assign(s, d))
+      if (_.contains(digits, d) && !solver.assign(s, d))
         return false;
     }
 
@@ -76,17 +76,18 @@ class Solver {
     var self = this; // FIXME: workaround for Traceur bug 1086
     var constraints = this._constraints;
 
-    if (!constraints.get(s).contains(d))
+    if (!_.contains(constraints.get(s), d))
       return this; // Already eliminated
 
-    constraints.set(s, this._constraints.get(s).replace(d, ""));
+    var values = _.without(constraints.get(s), d);
+    constraints.set(s, values);
 
-    if (constraints.get(s).length === 0)
+    if (values.length === 0)
       return false;  // Contradiction: removed last value
 
-    if (constraints.get(s).length === 1) {
+    if (values.length === 1) {
       // If there is only one value (d2) left in cell, remove it from peers
-      var d2 = constraints.get(s)[0];
+      var d2 = values[0];
       if (!(for (s2 of peers.get(s))
              self.eliminate(s2, d2)).every(x => x)) {
         return false;
@@ -96,7 +97,7 @@ class Solver {
     // Now check the places where d appears in the units of s
     for (var u of units.get(s)) {
       var dplaces = [for (s of u)
-                     if (constraints.get(s).contains(d))
+                     if (_.contains(constraints.get(s), d))
                        s];
 
       if (dplaces.length === 0)
@@ -123,8 +124,9 @@ class Solver {
     // Choose the unfilled cell s with the fewest possibilities
     var a = [for (s of cells)
              if (constraints.get(s).length > 1)
-               constraints.get(s).length + s].sort();
-    var s = a[0].slice(-2);
+               s]
+            .sort((s1, s2) => constraints.get(s1).length - constraints.get(s2));
+    var s = a[0];
 
     return (for (d of constraints.get(s))
               self.clone().assign(s, d))
@@ -148,7 +150,7 @@ class Solver {
     var line = "\n" + ["-".repeat(width * 3)].repeat(3).join("+");
     for (var r of rows) {
       lines.push([for (c of cols)
-                   center(self._constraints.get(r + c), width) + ("36".contains(c) && "|" || "")]
+                   center(self._constraints.get(r + c).join(""), width) + ("36".contains(c) && "|" || "")]
                  .join("") + ("CF".contains(r) && line || ""));
     }
     return lines.join("\n");
