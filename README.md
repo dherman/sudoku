@@ -10,10 +10,17 @@ This is a cleaned up version of [this JavaScript port](http://mxr.mozilla.org/mo
 
 # Building
 
-With [traceur](https://github.com/google/traceur-compiler) in your PATH, type
+With [traceur](https://github.com/google/traceur-compiler) in your PATH, simply use `make` to build the self-contained scripts, which should work in any ES5 engine.
+
+Use
 ```
-make && node build/pythonic.js && node build/methods.js
+node build/pythonic.js
 ```
+to run the built version using ES6's original Python-style comprehensions, and
+```
+node build/methods.js
+```
+to run the built version using just method combinators.
 
 # Understanding the code
 
