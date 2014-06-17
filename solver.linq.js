@@ -1,5 +1,5 @@
-// This code currently compiles with Traceur. It probably compiles with esnext
-// but I haven't tried it yet.
+// This code uses a strawman ES7 comprehensions syntax in the style of LINQ.
+// There are not currently any transpilers that support it.
 
 // (A,B):Plus, T:Iterable => (T<A>, T<A>) -> T<B>
 function cross(A, B) {
@@ -15,24 +15,24 @@ var cells    /* : Array<ix x 91> */ = cross(rows, cols);
 var unitlist /* : Array<Array<ix x 9> x 27> */
   = cols.map(c => cross(rows, [c]))
     .concat(rows.map(r => cross([r], cols)))
-    .concat(["ABC","DEF","GHI"].flatMap(rs =>
-               ["123","456","789"].map(cs =>
-                  cross(rs.split(""), cs.split("")))));
+    .concat(for (rs of ["ABC", "DEF", "GHI"])
+             for (cs of ["123", "456", "789"])
+              cross(rs.split(""), cs.split("")));
 
 var units    /* : Dict<ix, unit> */
-  = Dict.build(cells.lazy().map(s =>
-                [s, unitlist.filter(u => u.indexOf(s) > -1)]));
+  = Dict.build(for (s of cells.lazy())
+                [s, unitlist.filter(u => u.indexOf(s) > -1)]);
 
 var peers    /* : Dict<ix, Array<ix x 20>> */
-  = Dict.build(cells.lazy().map(s =>
-                [s, _.unique(units.get(s).flatMap(u => u.filter(s2 => s2 !== s)))]));
+  = Dict.build(for (s of cells.lazy())
+                [s, _.unique(units.get(s).flatMap(u => u.filter(s2 => s2 !== s)))]);
 
 class Solver {
 
   // (Dict<ix, values>?) -> Solver
   constructor(dict) {
     // Dict<ix, values>
-    this._constraints = dict || Dict.build(cells.lazy().map(s => [s, digits]));
+    this._constraints = dict || Dict.build(for (s of cells.lazy()) [s, digits]);
   }
 
   // (string) -> Solver | false
@@ -54,9 +54,9 @@ class Solver {
 
   // (ix, digit) -> Solver | false
   assign(s, d) {
-    if (this._constraints.get(s).lazy()
-                         .filter(d2 => d2 !== d)
-                         .every(d2 => this.eliminate(s, d2))) {
+    if ((for (d2 of this._constraints.get(s).lazy())
+         if (d2 !== d)
+           this.eliminate(s, d2)).every(x => x)) {
         return this;
     }
     return false;
@@ -104,8 +104,8 @@ class Solver {
   solve() {
     var constraints = this._constraints;
 
-    if (cells.lazy().map(s => constraints.get(s).length)
-                    .every(n => n === 1)) {
+    if ((for (s of cells.lazy())
+          constraints.get(s).length).every(n => n === 1)) {
       return this; // Solved!
     }
 
@@ -114,9 +114,9 @@ class Solver {
                  .sort((s1, s2) => constraints.get(s1).length - constraints.get(s2).length);
     var s = a[0];
 
-    return constraints.get(s).lazy()
-                             .filterMap(d => this.clone().assign(s, d))
-                             .some(solver => solver.solve());
+    return (for (d of constraints.get(s).lazy())
+            if (this.clone().assign(s, d))
+              d).some(solver => solver.solve());
   }
 
   // () -> string
