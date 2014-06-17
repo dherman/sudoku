@@ -12,7 +12,7 @@ This is a cleaned up version of [this JavaScript port](http://mxr.mozilla.org/mo
 
 With [traceur](https://github.com/google/traceur-compiler) in your PATH, type
 ```
-make && node build/demo.js
+make && node build/pythonic.js && node build/methods.js
 ```
 
 # Understanding the code
